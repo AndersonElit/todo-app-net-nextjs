@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using System.Text.Json;
 using RabbitMQ.Client;
@@ -12,9 +13,9 @@ namespace TodoApi.Infrastructure.DrivenAdapters.RabbitMQProducer
         private readonly IConnection _connection;
         private readonly IModel _channel;
 
-        public RabbitMQProducer(string hostname = "192.168.1.15", string queueName = "todo_status_updates")
+        public RabbitMQProducer(string queueName = "todo_status_updates")
         {
-            _hostname = hostname;
+            _hostname = Environment.GetEnvironmentVariable("RABBITMQ_HOST");
             _queueName = queueName;
 
             var factory = new ConnectionFactory { HostName = _hostname };
