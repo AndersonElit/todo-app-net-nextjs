@@ -15,10 +15,13 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
+// Get MySQL connection string from environment variable or use default
+var connectionString = Environment.GetEnvironmentVariable("MYSQL_CONNECTION_STRING");
+
 // Register services
 var serverVersion = new MySqlServerVersion(new Version(8, 0, 0));
 builder.Services.AddDbContext<TodoDbContext>(options =>
-    options.UseMySql("server=192.168.1.15;port=3306;database=tododb;user=root;password=12345", serverVersion,
+    options.UseMySql(connectionString, serverVersion,
         options => options.EnableRetryOnFailure()));
 builder.Services.AddScoped<TodoRepository, TodoAdapter>();
 builder.Services.AddScoped<TodoPort, TodoUseCase>();
