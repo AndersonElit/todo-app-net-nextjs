@@ -48,12 +48,19 @@ export default function TodoList() {
 
     const handleStatusChange = async (id: number, newStatus: TodoStatus) => {
         try {
-            console.log('Updating status to:', newStatus);
+            console.log('Current todo:', todos.find(t => t.id === id));
+            console.log('Updating status for id:', id);
+            console.log('New status value:', newStatus);
             const updatedTodo = await todoService.updateTodoStatus(id, newStatus);
-            console.log('Updated todo:', updatedTodo);
-            setTodos(prevTodos => 
-                prevTodos.map(todo => todo.id === id ? updatedTodo : todo)
-            );
+            console.log('Response from server:', updatedTodo);
+            
+            setTodos(prevTodos => {
+                const newTodos = prevTodos.map(todo => 
+                    todo.id === id ? { ...todo, status: newStatus } : todo
+                );
+                console.log('Updated todos:', newTodos);
+                return newTodos;
+            });
         } catch (err) {
             console.error('Error updating status:', err);
             setError('Failed to update todo status');
@@ -138,7 +145,12 @@ export default function TodoList() {
                             <div className="flex space-x-2">
                                 <select
                                     value={todo.status}
-                                    onChange={e => handleStatusChange(todo.id, parseInt(e.target.value) as TodoStatus)}
+                                    onChange={e => {
+                                        const newStatus = Number(e.target.value) as TodoStatus;
+                                        console.log('Selected value:', e.target.value);
+                                        console.log('Converted status:', newStatus);
+                                        handleStatusChange(todo.id, newStatus);
+                                    }}
                                     className="border rounded p-1"
                                 >
                                     <option value={TodoStatus.Todo}>Todo</option>
