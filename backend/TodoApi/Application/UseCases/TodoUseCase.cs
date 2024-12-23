@@ -2,6 +2,7 @@ using TodoApi.Domain.Models;
 using TodoApi.Domain.Ports.Out;
 using TodoApi.Domain.Ports.In;
 using TodoApi.Infrastructure.DrivenAdapters.RabbitMQProducer;
+using TodoApi.Infrastructure.MysqlDb.DrivenAdapters;
 
 namespace TodoApi.Application.UseCases
 {
@@ -14,6 +15,7 @@ namespace TodoApi.Application.UseCases
         {
             _todoRepository = todoRepository;
             _rabbitMQProducer = new RabbitMQProducer();
+            Console.WriteLine("TodoUseCase initialized with RabbitMQProducer");
         }
 
         public async Task<IEnumerable<Todo>> GetAllTodos()
@@ -43,23 +45,30 @@ namespace TodoApi.Application.UseCases
                 throw new ArgumentException("Id mismatch");
 
             await _todoRepository.Update(todo);
-
-            // Publish status update to RabbitMQ
-            _rabbitMQProducer.PublishStatusUpdate(todo, todo.Status);
         }
 
         public async Task UpdateTodoStatus(int id, TodoStatus status)
         {
-            var todo = await _todoRepository.GetById(id);
-            if (todo == null)
-                throw new KeyNotFoundException($"Todo with id {id} not found");
+            try
+            {
+                Console.WriteLine($"Updating todo {id} status to {status}");
+                var todo = await _todoRepository.GetById(id);
+                if (todo == null)
+                    throw new KeyNotFoundException($"Todo with id {id} not found");
 
-            var oldStatus = todo.Status;
-            todo.Status = status;
-            await _todoRepository.Update(todo);
+                var oldStatus = todo.Status;
+                todo.Status = status;
+                await _todoRepository.Update(todo);
 
-            // Publish status update to RabbitMQ
-            _rabbitMQProducer.PublishStatusUpdate(todo, oldStatus);
+                Console.WriteLine($"Publishing status update for todo {id}");
+                _rabbitMQProducer.PublishStatusUpdate(todo, oldStatus);
+                Console.WriteLine("Status update published successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in UpdateTodoStatus: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task DeleteTodo(int id)
