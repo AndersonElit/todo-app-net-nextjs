@@ -4,8 +4,7 @@ using TodoApi.Application.UseCases;
 using TodoApi.Domain.Ports.Out;
 using TodoApi.Domain.Ports.In;
 using TodoApi.Infrastructure.MysqlDb.DrivenAdapters;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-
+using TodoApi.Infrastructure.EntryPoints.RabbitMQConsumer;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -25,6 +24,9 @@ builder.Services.AddDbContext<TodoDbContext>(options =>
         options => options.EnableRetryOnFailure()));
 builder.Services.AddScoped<TodoRepository, TodoAdapter>();
 builder.Services.AddScoped<TodoPort, TodoUseCase>();
+
+// Add RabbitMQ Consumer as a hosted service
+builder.Services.AddHostedService<RabbitMQConsumer>();
 
 // Configure Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();

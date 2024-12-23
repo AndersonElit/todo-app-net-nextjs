@@ -1,16 +1,19 @@
 using TodoApi.Domain.Models;
 using TodoApi.Domain.Ports.Out;
 using TodoApi.Domain.Ports.In;
+using TodoApi.Infrastructure.DrivenAdapters.RabbitMQProducer;
 
 namespace TodoApi.Application.UseCases
 {
-    public class TodoUseCase : TodoPort
+    public class TodoUseCase : TodoPort, IDisposable
     {
         private readonly TodoRepository _todoRepository;
+        private readonly RabbitMQProducer _rabbitMQProducer;
 
         public TodoUseCase(TodoRepository todoRepository)
         {
             _todoRepository = todoRepository;
+            _rabbitMQProducer = new RabbitMQProducer();
         }
 
         public async Task<IEnumerable<Todo>> GetAllTodos()
@@ -40,6 +43,9 @@ namespace TodoApi.Application.UseCases
                 throw new ArgumentException("Id mismatch");
 
             await _todoRepository.Update(todo);
+
+            // Publish status update to RabbitMQ
+            _rabbitMQProducer.PublishStatusUpdate(todo, todo.Status);
         }
 
         public async Task UpdateTodoStatus(int id, TodoStatus status)
@@ -48,8 +54,12 @@ namespace TodoApi.Application.UseCases
             if (todo == null)
                 throw new KeyNotFoundException($"Todo with id {id} not found");
 
+            var oldStatus = todo.Status;
             todo.Status = status;
             await _todoRepository.Update(todo);
+
+            // Publish status update to RabbitMQ
+            _rabbitMQProducer.PublishStatusUpdate(todo, oldStatus);
         }
 
         public async Task DeleteTodo(int id)
@@ -58,6 +68,11 @@ namespace TodoApi.Application.UseCases
                 throw new KeyNotFoundException($"Todo with id {id} not found");
 
             await _todoRepository.Delete(id);
+        }
+
+        public void Dispose()
+        {
+            _rabbitMQProducer?.Dispose();
         }
     }
 }
