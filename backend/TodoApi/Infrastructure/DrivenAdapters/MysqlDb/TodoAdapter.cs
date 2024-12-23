@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TodoApi.Domain.Models;
 using TodoApi.Domain.Ports.Out;
 
-namespace TodoApi.Infrastructure.DrivenAdapters
+namespace TodoApi.Infrastructure.MysqlDb.DrivenAdapters
 {
     public class TodoAdapter : TodoRepository
     {

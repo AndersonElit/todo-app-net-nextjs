@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using TodoApi.Application.UseCases;
 using TodoApi.Domain.Ports.Out;
 using TodoApi.Domain.Ports.In;
-using TodoApi.Infrastructure.DrivenAdapters;
+using TodoApi.Infrastructure.MysqlDb.DrivenAdapters;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
