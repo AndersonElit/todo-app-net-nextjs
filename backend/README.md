@@ -155,8 +155,6 @@ This project implements Hexagonal Architecture (also known as Ports and Adapters
         └── Controllers
 ```
 
-![Hexagonal Architecture](architecture.png)
-
 The hexagonal architecture allows us to:
 - Keep the domain logic isolated from external concerns
 - Make the application more maintainable and testable
